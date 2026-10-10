@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>SHADOW LOOKUP</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0b0c;color:#eee;font-family:Arial,sans-serif}
+header{padding:25px 18px;border-bottom:1px solid #292929}
+.brand{font-size:23px;font-weight:800;letter-spacing:3px}
+.brand span{color:#999}
+header p{color:#888;font-size:13px}
+main{max-width:850px;margin:auto;padding:24px 16px}
+.hero{text-align:center;padding:35px 0}
+.hero small{color:#999;letter-spacing:3px}
+h1{font-size:34px;margin:15px 0}
+.hero p{color:#999;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:#151516;border:1px solid #303033;border-radius:14px;padding:20px;animation:fade .5s ease both}
+.card h2{font-size:18px}
+.card p{color:#999;font-size:13px;line-height:1.6;min-height:38px}
+input{width:100%;padding:13px;margin:8px 0;background:#090909;border:1px solid #393939;border-radius:8px;color:white;font-size:15px}
+button,.link{display:block;width:100%;padding:13px;margin-top:8px;border:1px solid #555;border-radius:8px;background:#e5e5e5;color:#111;font-weight:bold;text-align:center;text-decoration:none;font-size:14px;cursor:pointer}
+button:hover,.link:hover{background:#bbb}
+.result{font-size:13px;color:#ccc;overflow-wrap:anywhere;line-height:1.7}
+footer{text-align:center;color:#777;font-size:12px;padding:30px 15px}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">SHADOW <span>LOOKUP</span></div>
+  <p>PUBLIC INTELLIGENCE TOOLS</p>
+</header>
+<main>
+<section class="hero">
+  <small>OSINT • PUBLIC DATA</small>
+  <h1>Search. Discover.</h1>
+  <p>Une interface simple pour consulter des informations accessibles publiquement.</p>
+</section>
+
+<div class="grid">
+<section class="card">
+  <h2>01 / IP Lookup</h2>
+  <p>Consulte les informations réseau publiques d'une adresse IP.</p>
+  <input id="ip" placeholder="Ex. 8.8.8.8" inputmode="decimal">
+  <button onclick="lookupIP()">Rechercher l'IP</button>
+  <div id="ipresult" class="result"></div>
+</section>
+
+<section class="card">
+  <h2>02 / Email Lookup</h2>
+  <p>Vérifie le format d'une adresse et examine son domaine public.</p>
+  <input id="email" placeholder="nom@exemple.com" type="email">
+  <button onclick="lookupEmail()">Vérifier l'adresse</button>
+  <div id="emailresult" class="result"></div>
+</section>
+
+<section class="card">
+  <h2>03 / Google Lens</h2>
+  <p>Lance une recherche visuelle pour identifier des objets et images.</p>
+  <a class="link" href="https://lens.google.com/" target="_blank" rel="noopener">Ouvrir Google Lens ↗</a>
+</section>
+
+<section class="card">
+  <h2>04 / Snapchat Public</h2>
+  <p>Recherche des profils ou contenus publics indexés sur le Web.</p>
+  <input id="snap" placeholder="Nom du profil public">
+  <button onclick="searchSnap()">Rechercher sur le Web</button>
+</section>
+
+<section class="card">
+  <h2>05 / Google Maps</h2>
+  <p>Recherche des lieux publics, commerces et adresses.</p>
+  <input id="place" placeholder="Ville, lieu ou adresse">
+  <button onclick="searchMaps()">Rechercher un lieu</button>
+</section>
+</div>
+</main>
+<footer>
+SHADOW LOOKUP · Interface publique<br><br>
+Les résultats dépendent des services externes.
+Aucune donnée privée n'est recherchée.
+</footer>
+
+<script>
+async function lookupIP(){
+ const v=document.getElementById('ip').value.trim();
+ const out=document.getElementById('ipresult');
+ if(!/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(v)){
+ out.textContent="Entre une adresse IPv4 valide.";return;
+ }
+ out.textContent="Recherche en cours…";
+ try{
+ const r=await fetch("https://ipapi.co/"+encodeURIComponent(v)+"/json/");
+ const d=await r.json();
+ if(d.error) throw Error("Recherche impossible.");
+ out.innerHTML="";
+ ["ip","city","region","country_name","org","asn"].forEach(k=>{
+ if(d[k]){
+ const row=document.createElement("div");
+ row.textContent=k.toUpperCase()+": "+d[k];
+ out.appendChild(row);
+ }
+ });
+ }catch(e){out.textContent="Résultat indisponible. Réessaie plus tard."}
+}
+async function lookupEmail(){
+ const v=document.getElementById('email').value.trim();
+ const out=document.getElementById('emailresult');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
+ out.textContent="Adresse e-mail au format invalide.";return;
+ }
+ const domain=v.split("@")[1];
+ out.textContent="Format valide. Domaine : "+domain+
+ ". Cela ne confirme ni l'existence de la boîte ni l'identité du propriétaire.";
+}
+function searchSnap(){
+ const v=document.getElementById('snap').value.trim();
+ if(!v)return;
+ window.open("https://www.google.com/search?q="+encodeURIComponent('site: snapchat.com/add/ '+v)," _blank");
+}
+function searchMaps(){
+ const v=document.getElementById('place').value.trim();
+ if(!v)return;
+ window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(v),"_blank");
+}
+</script>
+</body>
+</html>
